@@ -37,3 +37,7 @@ if __name__ == "__main__":
         exit(0)
     if not arguments.write:
         arguments.write = f"{date.today()} {strftime('%H_%M_%S', localtime())}.txt"
+    paths = []
+    for path, folders, files in os.walk(arguments.path):
+        if "whatsapp" in path:
+                paths.extend([f"{path}/{file}" for file in files if "sqlite" in file])
