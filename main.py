@@ -79,7 +79,7 @@ if __name__ == "__main__":
         display('-', f"No Directory as {Back.YELLOW}{arguments.path}{Back.RESET}")
         exit(0)
     if not arguments.write:
-        arguments.write = f"{date.today()} {strftime('%H_%M_%S', localtime())}.txt"
+        arguments.write = f"{date.today()} {strftime('%H_%M_%S', localtime())}.pickle"
     paths = []
     for path, folders, files in os.walk(arguments.path):
         if "whatsapp" in path:
