@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import os
+import os, subprocess
 from pathlib import Path
 from datetime import date
 from optparse import OptionParser
@@ -17,6 +17,7 @@ status_color = {
 
 folder_name = ".mozilla"
 default_path = Path.home() / folder_name
+end_strings = ["pport", "susp", "termi", "/vt", "@g.us"]
 
 def display(status, data, start='', end='\n'):
     print(f"{start}{status_color[status]}[{status}] {Fore.BLUE}[{date.today()} {strftime('%H:%M:%S', localtime())}] {status_color[status]}{Style.BRIGHT}{data}{Fore.RESET}{Style.RESET_ALL}", end=end)
@@ -26,6 +27,48 @@ def get_arguments(*args):
     for arg in args:
         parser.add_option(arg[0], arg[1], dest=arg[2], help=arg[3])
     return parser.parse_args()[0]
+
+def extractChats(file_path):
+    chats = []
+    strings_output = subprocess.check_output(["strings", file_path]).decode().split('\n')
+    for index in range(len(strings_output)):
+        if strings_output[index].strip() == "desc":
+            group_name_offset = 1
+            try:
+                while True:
+                    if "creation" in strings_output[index-group_name_offset]:
+                        group_name = strings_output[index-group_name_offset-1].strip()[1:]
+                        break
+                    group_name_offset += 1
+            except:
+                group_name = None
+            message_content = ""
+            message_offset = 1
+            sender_offset = 1
+            try:
+                while True:
+                    if "owner" in strings_output[index-sender_offset]:
+                        sender = strings_output[index-sender_offset+1].strip()[1:].split('@')[0]
+                        break
+                    sender_offset += 1
+            except:
+                sender = None
+            try:
+                end = False
+                while True:
+                    for end_string in end_strings:
+                        if strings_output[index+message_offset].strip().startswith(end_string) or strings_output[index+message_offset].strip().endswith(end_string):
+                            end = True
+                            break
+                    if end:
+                        break
+                    message_content += f"{strings_output[index+message_offset]}\n"
+                    message_offset += 1
+            except Exception as error:
+                pass
+            if message_content.strip() != '':
+                chats.append([group_name, sender, message_content])
+    return chats
 
 if __name__ == "__main__":
     arguments = get_arguments(('-p', "--path", "path", f"Path to Firefox Cache Folder (Default={default_path})"),
