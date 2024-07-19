@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import os, subprocess
+import os, subprocess, pickle
 from pathlib import Path
 from datetime import date
 from optparse import OptionParser
@@ -91,4 +91,7 @@ if __name__ == "__main__":
     chats = []
     for path in paths:
         chats.extend([chat for chat in extractChats(path) if chat not in chats])
-    print(len(chats))
+    display('+', f"Total Chats => {Back.MAGENTA}{len(chats)}{Back.RESET}")
+    print('\n'.join([f"* {Fore.CYAN}{group}{Fore.RESET} => {Fore.GREEN}{sender}{Fore.RESET}" for group, sender, message in chats]))
+    with open(arguments.write, 'wb') as file:
+        pickle.dump(chats, file)
